@@ -20,9 +20,10 @@ export class Users{
     })
     phone:string;
     @Column({
-        type:'varchar'
+        type:'varchar',
+        name:'password_hash'
     })
-    password:string;
+    passwordHash:string;
     @CreateDateColumn({
         name:"created_at"
     })

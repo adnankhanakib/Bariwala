@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Users } from './entities/users.entity.js';
@@ -6,6 +6,7 @@ import { CreateUserDTO } from './dtos/create-user.dto.js';
 import { promises } from 'dns';
 import { NotFoundError } from 'rxjs';
 import { UpdateUserDTO } from './dtos/update-user.dto.js';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -13,19 +14,31 @@ export class UsersService {
         @InjectRepository(Users)
         private readonly usersRepo:Repository<Users>
     ){}
-    async create(CreateUserDTO:CreateUserDTO):Promise<Object>{
-        const user = this.usersRepo.create(CreateUserDTO);
+    async create(newUser:CreateUserDTO):Promise<Object>{
+        const existingMail = await this.usersRepo.findOneBy({
+            email:newUser.email
+        })
+        if(existingMail){
+            throw new ConflictException(`Email ${newUser.email} already exists`)
+        }
+        const {password,...userFields} = newUser
+        const passwordHash = await bcrypt.hash(newUser.password,10)
+
+        const user = this.usersRepo.create({
+            ...userFields,
+            passwordHash,
+        });
         const res = await this.usersRepo.save(user);
         if(res){
+            const {password,...userWithoutPass} = newUser;
         return {
             message:"User created successfully",
-            CreateUserDTO
+            details:userWithoutPass
         }
         }else{
-        return {
-            message:"User creation failed",
-            CreateUserDTO
-        }
+            return {
+                message:"User creation failed",
+            }
         }
     }
     async showAllUsers(): Promise<Users[]>{
@@ -82,5 +95,19 @@ export class UsersService {
             }
         }
         return {message:`No user found with id ${id}`}
+    }
+    async deleteUser(id:number):Promise<object | string>{
+        const user = this.usersRepo.findOneBy({id:id})
+        if(!user){
+            throw new NotFoundException(`No user found with id ${id}`)
+        }
+        const res = (await this.usersRepo.delete(id)).affected;
+        if(res){
+            return {
+                message:`User deleted successfully with ID ${id}`
+            }
+        }else{
+            throw new InternalServerErrorException(`Something went wrong when deleting the user ${id}`)
+        }
     }
 }
