@@ -1,0 +1,32 @@
+import { Column, PrimaryColumn } from "typeorm";
+@Entity('bill')
+export class Bill{
+    @PrimaryColumn()
+    id:number;
+    @Column()
+    month:string;
+    @Column({
+        type:'int'
+    })
+    rent:string;
+    @Column({
+        type:'int'
+    })
+    gas:string;
+    @Column({
+        type:'int'
+    })
+    water:string;
+    @Column({
+        type:'int'
+    })
+    electricity:string;
+    @Column({
+        type:'int'
+    })
+    total:string;
+    @Column({
+        type:'date'
+    })
+    due_date:Date;
+}

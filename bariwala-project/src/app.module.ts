@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module.js';
+import { BillingModule } from './billing/billing.module.js';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { AuthModule } from './auth/auth.module.js';
         synchronize:true
       })
     }),
-    AuthModule
+    AuthModule,
+    BillingModule
 
   ],
   controllers: [AppController],
