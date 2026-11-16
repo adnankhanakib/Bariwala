@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Flat } from './entities/flat.entity.js';
 import { Repository } from 'typeorm';
@@ -113,6 +113,42 @@ export class FlatsService {
             ownerInformation:{
                 name:owner.name,
                 contact:owner.phone
+            }
+        }
+    }
+
+    async deleteFlat(flatID:number){
+        const check = await this.flatRepo.findOneBy({id:flatID})
+        if(!check){
+            throw new NotFoundException(`Flat not found with ID ${flatID}`)
+        }
+        const deleted = (await this.flatRepo.delete(flatID)).affected
+        if(deleted){
+            return {
+                message:`Flat ID ${flatID} successfully deleted`
+            }
+        }
+        throw new InternalServerErrorException("Something went wrong")
+    }
+
+    async flatInformation(flatID:number){
+        const check = await this.flatRepo.findOne({
+            where:{
+                id:flatID
+            },
+            relations:{
+                owner:true
+            }
+        })
+        if(!check){
+            throw new NotFoundException(`Flat ID ${flatID} not found`)
+        }
+        const {owner,...otherFields} = check;
+        return {
+            flatInformation:otherFields,
+            ownerInformation:{
+                name:check.owner.name,
+                contact:check.owner.phone
             }
         }
     }

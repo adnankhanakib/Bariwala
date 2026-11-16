@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { FlatsService } from './flats.service.js';
 import { CreateFlatDTO } from './dtos/create-flat.dto.js';
 
@@ -13,8 +13,16 @@ export class FlatsController {
   getFlatByOwner(@Param("id") ownerID:number){
     return this.flatsService.showFlatByOwnerID(ownerID)
   }
+  @Get(":id")
+  getFlatInformation(@Param("id") flatID:number){
+    return this.flatsService.flatInformation(flatID)
+  }
   @Post("/create")
   createFlat(@Body() newFlat:CreateFlatDTO){
     return this.flatsService.createFlat(newFlat)
+  }
+  @Delete("/:id")
+  deleteFlat(@Param("id") id:number){
+    return this.flatsService.deleteFlat(id)
   }
 }
