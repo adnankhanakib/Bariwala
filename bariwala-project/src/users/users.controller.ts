@@ -4,12 +4,14 @@ import { CreateUserDTO } from './dtos/create-user.dto.js';
 import { Users } from './entities/users.entity.js';
 import { UpdateUserDTO } from './dtos/update-user.dto.js';
 import { JwtGuard } from '../auth/jwtGuard.guard.js';
-
+import { Roles } from '../auth/roles/roles.decorator.js';
+import { RolesGuard } from '../auth/roles/roles.guard.js';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Post('/create')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles('admin')
   createUser(@Body() createUserDto:CreateUserDTO){
     return this.usersService.create(createUserDto)
   }

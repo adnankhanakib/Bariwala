@@ -2,10 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
+import { UsersService } from "../users/users.service.js";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy){
-    constructor(config:ConfigService){
+    constructor(
+        config:ConfigService,
+        private readonly usersService:UsersService
+    ){
         const secret = config.get<string>('JWT_SECRET')
         if(!secret){
             throw new Error('JWT Secret is missing from environment variable')
@@ -16,10 +20,12 @@ export class JwtStrategy extends PassportStrategy(Strategy){
             secretOrKey:secret,
         });
     }
-    validate(payload:any){
+    async validate(payload:{id:number}){
+        const user = await this.usersService.getUserByID(payload.id)
         return{
-            id:payload.id,
-            email:payload.email
+            id:user.id,
+            email:user.email,
+            role:user.role
         }
     }
 }

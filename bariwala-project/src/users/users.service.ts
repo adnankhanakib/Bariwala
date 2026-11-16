@@ -53,7 +53,7 @@ export class UsersService {
             }
         })
     }
-    async getUserByID(id:number):Promise<Users | Object>{
+    async getUserByID(id:number):Promise<Users>{
         const user = await this.usersRepo.findOne({
             where:{
                 id:id
@@ -63,6 +63,7 @@ export class UsersService {
                 name:true,
                 email:true,
                 phone:true,
+                role:true,
                 createdAt:true,
                 updatedAt:true
             }
