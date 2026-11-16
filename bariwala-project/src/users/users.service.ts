@@ -70,10 +70,7 @@ export class UsersService {
         if(!user){
             throw new NotFoundException(`No user found with ID ${id}`)
         }
-        return {
-            message:"User found successfully",
-            user
-        };
+        return user
     }
     async updateUser(id:number,updateUserDTO:UpdateUserDTO):Promise<object>{
         const user = await this.usersRepo.findOne({
