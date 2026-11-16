@@ -21,7 +21,7 @@ export class Users{
     phone:string;
     @Column({
         type:'varchar',
-        name:'password_hash'
+        name:'password_hash',
     })
     passwordHash:string;
     @CreateDateColumn({

@@ -110,4 +110,7 @@ export class UsersService {
             throw new InternalServerErrorException(`Something went wrong when deleting the user ${id}`)
         }
     }
+    async getUserByEmail(email:string):Promise<Users | null>{
+        return this.usersRepo.findOneBy({email})
+    }
 }
