@@ -53,7 +53,7 @@ export class UsersService {
             }
         })
     }
-    async getUserByID(id:number):Promise<Users | Object>{
+    async getUserByID(id:number):Promise<Users>{
         const user = await this.usersRepo.findOne({
             where:{
                 id:id
@@ -63,6 +63,7 @@ export class UsersService {
                 name:true,
                 email:true,
                 phone:true,
+                role:true,
                 createdAt:true,
                 updatedAt:true
             }
@@ -70,10 +71,7 @@ export class UsersService {
         if(!user){
             throw new NotFoundException(`No user found with ID ${id}`)
         }
-        return {
-            message:"User found successfully",
-            user
-        };
+        return user
     }
     async updateUser(id:number,updateUserDTO:UpdateUserDTO):Promise<object>{
         const user = await this.usersRepo.findOne({

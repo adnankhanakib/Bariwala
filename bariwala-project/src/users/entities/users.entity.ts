@@ -24,6 +24,11 @@ export class Users{
         name:'password_hash',
     })
     passwordHash:string;
+    @Column({
+        type:'varchar',
+        default:'owner'
+    })
+    role:string;
     @CreateDateColumn({
         name:"created_at"
     })

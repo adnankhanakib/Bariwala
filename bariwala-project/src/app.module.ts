@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module.js';
+import { FlatsModule } from './flats/flats.module.js';
 import { BillingModule } from './billing/billing.module.js';
 
 @Module({
@@ -26,7 +27,7 @@ import { BillingModule } from './billing/billing.module.js';
       })
     }),
     AuthModule,
-    BillingModule
+    FlatsModule
 
   ],
   controllers: [AppController],

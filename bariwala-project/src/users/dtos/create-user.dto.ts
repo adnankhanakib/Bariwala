@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from "class-validator";
 
 export class CreateUserDTO{
     @IsString()
@@ -19,4 +19,8 @@ export class CreateUserDTO{
     @MinLength(8)
     @MaxLength(50)
     password:string;
+    @IsString()
+    @IsOptional()
+    @IsIn(['owner','admin','tenant'])
+    role:string='owner';
 }
