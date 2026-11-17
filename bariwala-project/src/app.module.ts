@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module.js';
 import { FlatsModule } from './flats/flats.module.js';
 import { BillingModule } from './billing/billing.module.js';
+import { PaymentModule } from './payment/payment.module.js';
 
 @Module({
   imports: [
@@ -27,7 +28,9 @@ import { BillingModule } from './billing/billing.module.js';
       })
     }),
     AuthModule,
-    FlatsModule
+    FlatsModule,
+    BillingModule,
+    PaymentModule,
 
   ],
   controllers: [AppController],

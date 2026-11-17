@@ -1,32 +1,36 @@
-import { Column, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 @Entity('bill')
 export class Bill{
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id:number;
     @Column()
     month:string;
     @Column({
         type:'int'
     })
-    rent:string;
+    rent:Number;
     @Column({
         type:'int'
     })
-    gas:string;
+    gas:Number;
     @Column({
         type:'int'
     })
-    water:string;
+    water:Number;
     @Column({
         type:'int'
     })
-    electricity:string;
+    electricity:Number;
     @Column({
         type:'int'
     })
-    total:string;
+    total:Number;
     @Column({
         type:'date'
     })
     due_date:Date;
+    @CreateDateColumn()
+    createdAt:Date;
+    @UpdateDateColumn()
+    updatedAt:Date;
 }

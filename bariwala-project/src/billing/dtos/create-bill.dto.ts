@@ -1,8 +1,5 @@
-import { isNumber, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-
+import { IsDateString, isNumber, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 export class CreateBillDto{
-    @IsNumber()
-    id:number;
     @IsString()
     month:string;
     @IsNumber()
@@ -13,7 +10,7 @@ export class CreateBillDto{
     water:number;
     @IsNumber()
     electricity:number;
-    @IsNumber()
-    due_date:string;
+    @IsDateString()
+    due_date:Date;
 
 }
