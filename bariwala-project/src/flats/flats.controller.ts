@@ -6,6 +6,7 @@ import { JwtGuard } from '../auth/jwtGuard.guard.js';
 import { RolesGuard } from '../auth/roles/roles.guard.js';
 import { Roles } from '../auth/roles/roles.decorator.js';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { AssignFlatOwnerDTO } from './dtos/assign-flat.dto.js';
 @ApiBearerAuth()
 @UseGuards(JwtGuard,RolesGuard)
 @Controller('flats')
@@ -51,7 +52,12 @@ export class FlatsController {
   }
   @Patch("/tenants/assign/:id")
   @Roles('admin','owner')
-  assignFlat(@Param('id',ParseIntPipe) flatID:number, @Body('ownerID') ownerID:number, @Req() request:any){
-
+  assignFlat(@Param('id',ParseIntPipe) flatID:number, @Body() dto:AssignFlatOwnerDTO, @Req() request:any){
+    return this.flatsService.assignTenant(flatID,dto)
+  }
+  @Patch("/tenants/evicate/:id")
+  @Roles('admin','owner')
+  evicateFlat(@Param('id',ParseIntPipe) flatID:number){
+    return this.flatsService.evicateTenant(flatID)
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Flat } from './entities/flat.entity.js';
 import { Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { CreateFlatDTO } from './dtos/create-flat.dto.js';
 import { UsersService } from '../users/users.service.js';
 import { Users } from '../users/entities/users.entity.js';
 import { UpdateFlatDTO } from './dtos/update-flat.dto.js';
+import { AssignFlatOwnerDTO } from './dtos/assign-flat.dto.js';
 
 @Injectable()
 export class FlatsService {
@@ -203,10 +204,82 @@ export class FlatsService {
             }
         }
     }
+    async assignTenant(flatID:number,dto:AssignFlatOwnerDTO){
+        const user = await this.usersService.getUserByID(dto.userID)
+        const flat = await this.flatRepo.findOne({
+            where:{
+                id:flatID
+            },
+            relations:{
+                tenant:true
+            }
+        })
+        if(!flat){
+            throw new NotFoundException(`No flat found with ID ${flatID}`)
+        }
+        if(flat.tenant){
+            throw new ConflictException(`Tenant already exists on flat number ${flat.flatNo}`)
+        }
+        if(!user){
+            throw new NotFoundException(`No user found with ID ${dto.userID}`)
+        }
+        const todayDate = new Date()
+        const x = await this.flatRepo.update(flatID,{
+            tenant:user,
+            tenantJoinDate:todayDate
+        })
+        if(x.affected){
+            return {
+                message:"Tenant updated successfully",
+                flatInformation:{
+                    flatNumber: flat.flatNo,
+                    floor:flat.floor,
+                    address:flat.address,
+                    tenantInformation:{
+                        name:user.name,
+                        contact:user.phone
+                    },
+                    tenantJoinDate:todayDate
+                }
+            }
+        }
+    }
+    async evicateTenant(flatID:number){
+        const flat = await this.flatRepo.findOne({
+            where:{
+                id:flatID
+            },
+            relations:{
+                tenant:true
+            }
+        })
+        if(!flat){
+            throw new NotFoundException(`No flat found with ID ${flatID}`)
+        }
+        if(!flat.tenant){
+            throw new ConflictException(`No tenant lives on flat number ${flat.flatNo}`)
+        }
+        const x = await this.flatRepo.update(flatID,{
+            tenant:null,
+            tenantJoinDate:null
+        })
+        if(x.affected){
+            return {
+                message:"Tenant evicated successfully",
+                flatInformation:{
+                    flatNumber: flat.flatNo,
+                    floor:flat.floor,
+                    address:flat.address,
+                }
+            }
+        }
+    }
     async getAllTenants(ownerID:number,role:string){
         var flats
         if(role=="admin"){
-            flats = await this.flatRepo.find()
+            flats = await this.flatRepo.find({relations:{
+                tenant:true
+            }})
         }else{
             flats = await this.getTenantsByOwner(ownerID)
             return flats
