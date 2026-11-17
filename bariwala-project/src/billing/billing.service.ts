@@ -34,19 +34,35 @@ export class BillingService {
             throw new InternalServerErrorException("Bill creation failed")
         }
     }
-    async showBill(){
-        const bills = this.billRepo.find()
-        return bills
-    }
-    async getBillByID(id:number){
-        const bill = await this.billRepo.findOneBy({id:id})
-        if(!bill){
-            throw new NotFoundException("Bill not found")
+    async showBill(ownerID: number,role:string) {
+        if(role=="admin"){
+            return this.billRepo.find()
+        }else if(role=="owner"){
+            return this.billRepo
+            .createQueryBuilder('bill')
+            .leftJoinAndSelect('bill.flat', 'flat')
+            .innerJoin('flat.owner', 'owner')
+            .where('owner.id = :ownerID', { ownerID })
+            .getMany();
         }
-        return bill
     }
-    async deleteBill(id:number){
-        const bill = await this.billRepo.findOneBy({id:id})
+    async getBillByID(id:number,reqID:number,role:string){
+        const query = this.billRepo
+            .createQueryBuilder('bill')
+            .leftJoinAndSelect('bill.flat', 'flat')
+            .innerJoin('flat.owner', 'owner')
+            .where('bill.id = :billID', { billID: id });
+        if (role !== 'admin') {
+            query.andWhere('owner.id = :ownerID', { ownerID: reqID });
+        }
+        const bill = await query.getOne();
+        if (!bill) {
+            throw new NotFoundException(`Bill ${id} not found`);
+        }
+        return bill;
+    }
+    async deleteBill(id:number,reqID:number){
+        const bill = await this.getBillByID(id,reqID,'owner')
         if(!bill){
             throw new NotFoundException("Bill not found")
         }
@@ -54,12 +70,15 @@ export class BillingService {
         if(result.affected){
             return {
                 message:`Bill ID ${id} has been deleted`,
-                billInfo:this.getBillByID(id)
+                billInfo:bill
             }
         }
     }
-    async updateBill(id:number, dto:UpdateBillDto){
-        const bill = await this.getBillByID(id)
+    async updateBill(id:number, dto:UpdateBillDto,reqID:number){
+        const bill = await this.getBillByID(id,reqID,'owner')
+        if(!bill){
+            throw new NotFoundException("Bill not found with ID "+id)
+        }
         const {flat_id,...billFields} = dto;
         const updatedBill = this.billRepo.merge(bill,billFields)
         var flat;

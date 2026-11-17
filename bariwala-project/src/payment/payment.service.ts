@@ -23,10 +23,10 @@ export class PaymentService {
     const allPayments=await this.payRepo.find()
     return allPayments
   }
-  async createPayment(dto:CreatePaymentDto){
+  async createPayment(dto:CreatePaymentDto,reqID:number){
     const {bill_id,received_by,...exemptedDto} = dto
     const rcv_by = await this.usersService.getUserByID(received_by) as Users
-    const bill = await this.billService.getBillByID(bill_id) as Bill
+    const bill = await this.billService.getBillByID(bill_id,reqID,"owner") as Bill
     const newPayment = await this.payRepo.create({
       ...dto,
       received_by:rcv_by,

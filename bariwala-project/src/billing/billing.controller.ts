@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { BillingService } from './billing.service.js';
 import { CreateBillDto } from './dtos/create-bill.dto.js';
 import { UpdateBillDto } from './dtos/update-bill.dto.js';
@@ -10,15 +10,15 @@ import { Roles } from '../auth/roles/roles.decorator.js';
 @Controller('billing')
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
-  @Roles('owner')
+  @Roles('owner','admin')
   @Get()
-  showBills(){
-    return this.billingService.showBill()
+  showBills(@Req() request:any){
+    return this.billingService.showBill(request.user.id,request.user.role)
   }
-  @Roles('owner')
+  @Roles('owner','admin')
   @Get(":id")
-  getBillByID(@Param('id') id:number){
-    return this.billingService.getBillByID(id)
+  getBillByID(@Param('id') id:number, @Req() request:any){
+    return this.billingService.getBillByID(id,request.user.id,request.user.role)
   }
   @Roles('owner')
   @Post('/create')
@@ -27,13 +27,13 @@ export class BillingController {
   }
   @Roles('owner')
   @Delete('/delete/:id')
-  deleteBill(@Param('id') id:number){
-    return this.billingService.deleteBill(id)
+  deleteBill(@Param('id') id:number,@Req() request:any){
+    return this.billingService.deleteBill(id,request.user.id)
   }
   @Roles('owner')
   @Patch('/update/:id')
-  updateBill(@Param('id') id:number, @Body() dto:UpdateBillDto){
-    return this.billingService.updateBill(id,dto)
+  updateBill(@Param('id') id:number, @Body() dto:UpdateBillDto, @Req() request:any){
+    return this.billingService.updateBill(id,dto,request.user.id)
   }
 
 }
