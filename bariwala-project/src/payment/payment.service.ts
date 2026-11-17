@@ -33,7 +33,9 @@ export class PaymentService {
       bill_id:bill
     })
   }
-  async editPayment(dto:UpdatePaymentDto){
-    
+  async editPayment(paymentID:number,dto:UpdatePaymentDto){
+    // const {bill_id,...restFields} = dto
+    // const bill = await this.billService.getBillByID() as Bill
+    // return this.payRepo.update(paymentID,dto)
   }
 }

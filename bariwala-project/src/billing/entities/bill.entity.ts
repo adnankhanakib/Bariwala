@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Flat } from "../../flats/entities/flat.entity.js";
+import type { Relation } from "typeorm";
 @Entity('bill')
 export class Bill{
     @PrimaryGeneratedColumn()
@@ -8,27 +10,30 @@ export class Bill{
     @Column({
         type:'int'
     })
-    rent:Number;
+    rent:number;
     @Column({
         type:'int'
     })
-    gas:Number;
+    gas:number;
     @Column({
         type:'int'
     })
-    water:Number;
+    water:number;
     @Column({
         type:'int'
     })
-    electricity:Number;
+    electricity:number;
     @Column({
         type:'int'
     })
-    total:Number;
+    total:number;
     @Column({
         type:'date'
     })
     due_date:Date;
+    @ManyToOne(()=>Flat)
+    @JoinColumn()
+    flat:Relation<Flat>
     @CreateDateColumn()
     createdAt:Date;
     @UpdateDateColumn()
