@@ -94,7 +94,7 @@ export class UsersService {
         return {message:`No user found with id ${id}`}
     }
     async deleteUser(id:number):Promise<object | string>{
-        const user = this.usersRepo.findOneBy({id:id})
+        const user = await this.usersRepo.findOneBy({id:id})
         if(!user){
             throw new NotFoundException(`No user found with id ${id}`)
         }

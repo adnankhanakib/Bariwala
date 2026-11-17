@@ -16,7 +16,7 @@ export class AuthService {
   async login(data:LoginDTO){
     const user = await this.userService.getUserByEmail(data.email)
     if(!user){
-      throw new InternalServerErrorException("Something went wrong while checking")
+      throw new UnauthorizedException("Email or password is invalid")
     }
 
     const passCheck = await bcrypt.compare(data.password, user.passwordHash)
@@ -36,6 +36,9 @@ export class AuthService {
     }
   }
   async register(data:RegisterUserDTO){
-    return await this.userService.create(data)
+    return await this.userService.create({
+      ...data,
+      role:'tenant'
+    })
   }
 }

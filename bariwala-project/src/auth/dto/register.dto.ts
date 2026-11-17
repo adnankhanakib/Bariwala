@@ -32,12 +32,4 @@ export class RegisterUserDTO{
         example:'Adnan121436!'
     })
     password:string;
-    @IsString()
-    @IsOptional()
-    @IsIn(['owner','admin','tenant'])
-    @ApiProperty({
-        example:'tenant',
-        description:'Only tenant can be registred via this endpoint'
-    })
-    role:string='tenant';
 }

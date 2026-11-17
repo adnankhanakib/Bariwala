@@ -53,11 +53,11 @@ export class FlatsController {
   @Patch("/tenants/assign/:id")
   @Roles('admin','owner')
   assignFlat(@Param('id',ParseIntPipe) flatID:number, @Body() dto:AssignFlatOwnerDTO, @Req() request:any){
-    return this.flatsService.assignTenant(flatID,dto)
+    return this.flatsService.assignTenant(flatID,dto, request.user.id,request.user.role)
   }
   @Patch("/tenants/evicate/:id")
   @Roles('admin','owner')
-  evicateFlat(@Param('id',ParseIntPipe) flatID:number){
-    return this.flatsService.evicateTenant(flatID)
+  evicateFlat(@Param('id',ParseIntPipe) flatID:number, @Req() request:any){
+    return this.flatsService.evicateTenant(flatID,request.user.id,request.user.role)
   }
 }

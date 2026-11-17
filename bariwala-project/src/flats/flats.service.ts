@@ -204,16 +204,31 @@ export class FlatsService {
             }
         }
     }
-    async assignTenant(flatID:number,dto:AssignFlatOwnerDTO){
+    async assignTenant(flatID:number,dto:AssignFlatOwnerDTO,loggedUserID:number,role:string){
         const user = await this.usersService.getUserByID(dto.userID)
-        const flat = await this.flatRepo.findOne({
-            where:{
-                id:flatID
-            },
-            relations:{
-                tenant:true
-            }
-        })
+        var flat;
+        if(role=="admin"){
+            flat = await this.flatRepo.findOne({
+                where:{
+                    id:flatID
+                },
+                relations:{
+                    tenant:true
+                }
+            })
+        }else if(role=="owner"){
+            flat = await this.flatRepo.findOne({
+                where:{
+                    id:flatID,
+                    owner:{
+                        id:loggedUserID
+                    }
+                },
+                relations:{
+                    tenant:true
+                }
+            })
+        }
         if(!flat){
             throw new NotFoundException(`No flat found with ID ${flatID}`)
         }
@@ -244,15 +259,30 @@ export class FlatsService {
             }
         }
     }
-    async evicateTenant(flatID:number){
-        const flat = await this.flatRepo.findOne({
-            where:{
-                id:flatID
-            },
-            relations:{
-                tenant:true
-            }
-        })
+    async evicateTenant(flatID:number,loggedUserID:number,role:string){
+        var flat;
+        if(role=="admin"){
+            flat = await this.flatRepo.findOne({
+                where:{
+                    id:flatID
+                },
+                relations:{
+                    tenant:true
+                }
+            })
+        }else if(role=="owner"){
+            flat = await this.flatRepo.findOne({
+                where:{
+                    id:flatID,
+                    owner:{
+                        id:loggedUserID
+                    }
+                },
+                relations:{
+                    tenant:true
+                }
+            })
+        }
         if(!flat){
             throw new NotFoundException(`No flat found with ID ${flatID}`)
         }
