@@ -5,6 +5,7 @@ import { Users } from '../users/entities/users.entity.js';
 import { UsersService } from '../users/users.service.js';
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
+import { RegisterUserDTO } from './dto/register.dto.js';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,7 @@ export class AuthService {
   async login(data:LoginDTO){
     const user = await this.userService.getUserByEmail(data.email)
     if(!user){
-      throw new InternalServerErrorException("Something went wrong while checking")
+      throw new UnauthorizedException("Email or password is invalid")
     }
 
     const passCheck = await bcrypt.compare(data.password, user.passwordHash)
@@ -33,5 +34,11 @@ export class AuthService {
       data:dataWithoutPass,
       access_token:access_token
     }
+  }
+  async register(data:RegisterUserDTO){
+    return await this.userService.create({
+      ...data,
+      role:'tenant'
+    })
   }
 }

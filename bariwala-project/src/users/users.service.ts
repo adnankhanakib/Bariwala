@@ -7,6 +7,7 @@ import { promises } from 'dns';
 import { NotFoundError } from 'rxjs';
 import { UpdateUserDTO } from './dtos/update-user.dto.js';
 import * as bcrypt from 'bcrypt';
+import { response } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -31,14 +32,12 @@ export class UsersService {
         const res = await this.usersRepo.save(user);
         if(res){
             const {password,...userWithoutPass} = newUser;
-        return {
-            message:"User created successfully",
-            details:userWithoutPass
-        }
-        }else{
             return {
-                message:"User creation failed",
+                message:"User created successfully",
+                details:userWithoutPass
             }
+        }else{
+            throw new InternalServerErrorException("Failed to create user")
         }
     }
     async showAllUsers(): Promise<Users[]>{
@@ -95,7 +94,7 @@ export class UsersService {
         return {message:`No user found with id ${id}`}
     }
     async deleteUser(id:number):Promise<object | string>{
-        const user = this.usersRepo.findOneBy({id:id})
+        const user = await this.usersRepo.findOneBy({id:id})
         if(!user){
             throw new NotFoundException(`No user found with id ${id}`)
         }
@@ -110,5 +109,36 @@ export class UsersService {
     }
     async getUserByEmail(email:string):Promise<Users | null>{
         return this.usersRepo.findOneBy({email})
+    }
+    async populateDB(){
+        const admin:CreateUserDTO ={
+            name:'Adnan',
+            email:'admin@example.com',
+            phone:'01997753452',
+            password:'Admin121436!',
+            role:'admin'
+        }
+        const owner:CreateUserDTO={
+            name:'Khan',
+            email:'owner@example.com',
+            phone:'01997753452',
+            password:'Demo121436!',
+            role:'owner'
+        }
+        var responseObj = {
+            message:"Database populated with these datas",
+            owner:owner,
+            admin:admin
+        }
+
+        const checkAdminDummy = await this.usersRepo.findOneBy({email:admin.email})
+        const checkOwnerDummy = await this.usersRepo.findOneBy({email:owner.email})
+        if(checkAdminDummy && checkOwnerDummy){
+            responseObj.message="Database already populated with these values"
+        }else{
+            await this.create(admin)
+            await this.create(owner)
+        }
+        return responseObj
     }
 }

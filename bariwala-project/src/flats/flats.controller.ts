@@ -1,28 +1,63 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Req,Get,Patch, Param, Post, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { FlatsService } from './flats.service.js';
 import { CreateFlatDTO } from './dtos/create-flat.dto.js';
-
+import { UpdateFlatDTO } from './dtos/update-flat.dto.js';
+import { JwtGuard } from '../auth/jwtGuard.guard.js';
+import { RolesGuard } from '../auth/roles/roles.guard.js';
+import { Roles } from '../auth/roles/roles.decorator.js';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AssignFlatOwnerDTO } from './dtos/assign-flat.dto.js';
+@ApiBearerAuth()
+@UseGuards(JwtGuard,RolesGuard)
 @Controller('flats')
 export class FlatsController {
   constructor(private readonly flatsService: FlatsService) {}
   @Get()
-  getAllFlats(){
-    return this.flatsService.showAllFlats()
+  @Roles('admin','owner')
+  getAllFlats(@Req() request:any){
+    return this.flatsService.showAllFlats(
+      request.user.id,
+      request.user.role
+    )
   }
   @Get("/owner/id/:id")
-  getFlatByOwner(@Param("id") ownerID:number){
+  @Roles('admin')
+  getFlatByOwner(@Param("id",ParseIntPipe) ownerID:number){
     return this.flatsService.showFlatByOwnerID(ownerID)
   }
+  @Get("/tenants")
+  @Roles('admin','owner')
+  showFlatTenants(@Req() request:any){
+    return this.flatsService.getAllTenants(request.user.id,request.user.role)
+  }
   @Get(":id")
-  getFlatInformation(@Param("id") flatID:number){
+  @Roles('admin')
+  getFlatInformation(@Param("id",ParseIntPipe) flatID:number){
     return this.flatsService.flatInformation(flatID)
   }
   @Post("/create")
+  @Roles('admin')
   createFlat(@Body() newFlat:CreateFlatDTO){
     return this.flatsService.createFlat(newFlat)
   }
   @Delete("/:id")
-  deleteFlat(@Param("id") id:number){
+  @Roles('admin')
+  deleteFlat(@Param("id",ParseIntPipe) id:number){
     return this.flatsService.deleteFlat(id)
+  }
+  @Patch("/:id")
+  @Roles('admin')
+  updateFlat(@Param("id",ParseIntPipe) id:number, @Body() dto:UpdateFlatDTO){
+    return this.flatsService.updateFlat(id,dto)
+  }
+  @Patch("/tenants/assign/:id")
+  @Roles('admin','owner')
+  assignFlat(@Param('id',ParseIntPipe) flatID:number, @Body() dto:AssignFlatOwnerDTO, @Req() request:any){
+    return this.flatsService.assignTenant(flatID,dto, request.user.id,request.user.role)
+  }
+  @Patch("/tenants/evicate/:id")
+  @Roles('admin','owner')
+  evicateFlat(@Param('id',ParseIntPipe) flatID:number, @Req() request:any){
+    return this.flatsService.evicateTenant(flatID,request.user.id,request.user.role)
   }
 }

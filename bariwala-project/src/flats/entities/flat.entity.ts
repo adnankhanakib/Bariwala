@@ -35,6 +35,18 @@ export class Flat{
     )
     @JoinColumn()
     owner:Relation<Users>
+    @ManyToOne(()=>Users,{
+        nullable:true
+    })
+    @JoinColumn({
+        name:'tenant_id'
+    })
+    tenant:Relation<Users> | null
+    @Column({
+        type:'date',
+        nullable:true
+    })
+    tenantJoinDate:Date | null
     @CreateDateColumn({
         name:"created_at"
     })
