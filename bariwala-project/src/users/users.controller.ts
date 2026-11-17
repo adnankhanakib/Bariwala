@@ -6,9 +6,12 @@ import { UpdateUserDTO } from './dtos/update-user.dto.js';
 import { JwtGuard } from '../auth/jwtGuard.guard.js';
 import { Roles } from '../auth/roles/roles.decorator.js';
 import { RolesGuard } from '../auth/roles/roles.guard.js';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+  @ApiBearerAuth()
+  
   @Post('/create')
   @UseGuards(JwtGuard, RolesGuard)
   @Roles('admin')
@@ -16,23 +19,33 @@ export class UsersController {
     return this.usersService.create(createUserDto)
   }
   @Get()
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard,RolesGuard)
+  @Roles('admin')
   showAllUsers():Promise<Users[]>{
     return this.usersService.showAllUsers();
   }
   @Get(':id')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard,RolesGuard)
+  @Roles('admin')
   getUserByID(@Param('id') id:number):Promise<Object>{
     return this.usersService.getUserByID(id);
   }
   @Patch(':id')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard,RolesGuard)
+  @Roles('admin')
   async patchByID(@Param('id') id:number, @Body() user:UpdateUserDTO){
     return await this.usersService.updateUser(id,user)
   }
   @Delete(':id')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard,RolesGuard)
+  @Roles('admin')
   async deleteByID(@Param('id') id:number){
     return this.usersService.deleteUser(id)
   }
+
+  @Post('/populate')
+  async createDummy(){
+    return this.usersService.populateDB()
+  }
+
 }
