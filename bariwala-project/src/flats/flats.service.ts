@@ -203,7 +203,25 @@ export class FlatsService {
             }
         }
     }
-    async getTenants(OwnerID:number){
+    async getAllTenants(ownerID:number,role:string){
+        var flats
+        if(role=="admin"){
+            flats = await this.flatRepo.find()
+        }else{
+            flats = await this.getTenantsByOwner(ownerID)
+            return flats
+        }
+        return flats.map((flat)=>({
+            flatID:flat.id,
+            flatNumber:flat.flatNo,
+            tenant:flat.tenant?{
+                id:flat.tenant.id,
+                name:flat.tenant.name,
+                contact:flat.tenant.phone
+            }:null
+        }))
+    }
+    async getTenantsByOwner(OwnerID:number){
         const flats = await this.flatRepo.find({
             where:{
                 owner:{id:OwnerID}
@@ -221,6 +239,11 @@ export class FlatsService {
                 }
             }
         })
+        if(flats.length==0){
+            return{
+                message:"No flats found with matching owner ID"
+            }
+        }
         return flats.map((flat)=>({
             flatID:flat.id,
             flatNumber:flat.flatNo,
