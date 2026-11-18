@@ -1,5 +1,7 @@
 export enum MaintenanceStatus {
-    PENDING = 'PENDING',
-    IN_PROGRESS = 'IN_PROGRESS',
-    DONE = 'DONE',
+    SUBMITTED = 'submitted',
+    ACCEPTED = 'accepted',
+    IN_PROGRESS = 'in_progress',
+    RESOLVED = 'resolved',
+    REJECTED = 'rejected',
 }
