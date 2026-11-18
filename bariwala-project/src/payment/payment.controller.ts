@@ -1,34 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { UpdatePaymentDto } from './dto/update-payment.dto.js';
-
+import { JwtGuard } from '../auth/jwtGuard.guard.js';
+import { ApiBearerAuth } from '@nestjs/swagger';
+@UseGuards(JwtGuard)
+@ApiBearerAuth()
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
-  @Post()
+  @Post("create")
   create(@Body() createPaymentDto: CreatePaymentDto,@Req() request:any) {
-    return this.paymentService.createPayment(createPaymentDto,request.user.id);
+    return this.paymentService.createPayment(
+      createPaymentDto,
+      request.user.id,
+      request.user.role,
+    );
+  }
+  @Patch(":id")
+  editPayment(@Param("id") id:number, @Body() update:UpdatePaymentDto,@Req() request:any){
+    return this.paymentService.editPayment(id,update,request.user.id)
+  }
+  @Delete(":id")
+  deletePayment(@Param(":id") id:number,@Body() update:UpdatePaymentDto,@Req() request:any){
+    return this.paymentService.editPayment(id,update,request.user.id)
+  }
+  @Get(":id")
+  getPayment(@Param(":id") id:number){
+    return this.paymentService.getPaymentByID(id)
+  }
+  @Get()
+  getAllPayment(){
+    return this.paymentService.viewPayments()
   }
 
-  // @Get()
-  // findAll() {
-  //   return this.paymentService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.paymentService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-  //   return this.paymentService.update(+id, updatePaymentDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.paymentService.remove(+id);
-  // }
 }

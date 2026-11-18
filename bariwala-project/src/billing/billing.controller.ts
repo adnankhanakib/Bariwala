@@ -5,7 +5,8 @@ import { UpdateBillDto } from './dtos/update-bill.dto.js';
 import { JwtGuard } from '../auth/jwtGuard.guard.js';
 import { RolesGuard } from '../auth/roles/roles.guard.js';
 import { Roles } from '../auth/roles/roles.decorator.js';
-
+import { ApiBearerAuth } from '@nestjs/swagger';
+@ApiBearerAuth()
 @UseGuards(JwtGuard,RolesGuard)
 @Controller('billing')
 export class BillingController {
@@ -20,17 +21,17 @@ export class BillingController {
   getBillByID(@Param('id') id:number, @Req() request:any){
     return this.billingService.getBillByID(id,request.user.id,request.user.role)
   }
-  @Roles('owner')
+  @Roles('owner','admin')
   @Post('/create')
   createBill(@Body() createBillDto:CreateBillDto){
     return this.billingService.create(createBillDto)
   }
-  @Roles('owner')
+  @Roles('owner','admin')
   @Delete('/delete/:id')
   deleteBill(@Param('id') id:number,@Req() request:any){
     return this.billingService.deleteBill(id,request.user.id)
   }
-  @Roles('owner')
+  @Roles('owner','admin')
   @Patch('/update/:id')
   updateBill(@Param('id') id:number, @Body() dto:UpdateBillDto, @Req() request:any){
     return this.billingService.updateBill(id,dto,request.user.id)

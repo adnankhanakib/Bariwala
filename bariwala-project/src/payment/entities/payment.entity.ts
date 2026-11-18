@@ -9,9 +9,6 @@ export class Payment {
     @OneToOne(()=>Bill)
     @JoinColumn()
     bill_id:Relation<Bill>;
-    @ManyToOne(()=>Users)
-    @JoinColumn()
-    received_by:Relation<Users>
     @Column({
         type:"int"
     })
@@ -25,5 +22,10 @@ export class Payment {
     created_at:Date
     @UpdateDateColumn()
     updated_at:Date
+    @Column({
+        type:"int",
+
+    })
+    amount:number;
 }
 

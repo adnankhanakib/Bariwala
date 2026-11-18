@@ -46,19 +46,16 @@ export class BillingService {
             .getMany();
         }
     }
-    async getBillByID(id:number,reqID:number,role:string){
-        const query = this.billRepo
-            .createQueryBuilder('bill')
-            .leftJoinAndSelect('bill.flat', 'flat')
-            .innerJoin('flat.owner', 'owner')
-            .where('bill.id = :billID', { billID: id });
-        if (role !== 'admin') {
-            query.andWhere('owner.id = :ownerID', { ownerID: reqID });
-        }
-        const bill = await query.getOne();
-        if (!bill) {
+    async getBillByID(id: number, reqID: number, role: string) {
+        const bill = await this.billRepo.findOne({
+            where: { id },
+            relations: { flat: { owner: true } },
+        });
+
+        if (!bill || (role !== 'admin' && bill.flat?.owner?.id !== reqID)) {
             throw new NotFoundException(`Bill ${id} not found`);
         }
+
         return bill;
     }
     async deleteBill(id:number,reqID:number){

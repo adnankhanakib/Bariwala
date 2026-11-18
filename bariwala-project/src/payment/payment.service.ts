@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
 import { UpdatePaymentDto } from './dto/update-payment.dto.js';
 import { Repository } from 'typeorm';
@@ -8,7 +8,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { UsersService } from '../users/users.service.js';
 import { Users } from '../users/entities/users.entity.js';
 import { BillingService } from '../billing/billing.service.js';
-import { Bill } from '../billing/entities/bill.entity.js';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class PaymentService {
@@ -23,19 +23,73 @@ export class PaymentService {
     const allPayments=await this.payRepo.find()
     return allPayments
   }
-  async createPayment(dto:CreatePaymentDto,reqID:number){
-    const {bill_id,received_by,...exemptedDto} = dto
-    const rcv_by = await this.usersService.getUserByID(received_by) as Users
-    const bill = await this.billService.getBillByID(bill_id,reqID,"owner") as Bill
+  async getPaymentByID(payID:number){
+    const allPayments=await this.payRepo.findOneBy({
+      payment_id:payID
+    })
+    return allPayments
+  }
+  async createPayment(dto:CreatePaymentDto,reqID:number,role:string){
+    const {bill_id,...exemptedDto} = dto
+    const bill = await this.billService.getBillByID(bill_id,reqID,role)
+    const receipt_no = randomInt(100000,1000000)
     const newPayment = await this.payRepo.create({
       ...dto,
-      received_by:rcv_by,
-      bill_id:bill
+      bill_id:bill,
+      receipt_no:receipt_no
     })
+    const result = await this.payRepo.save(newPayment)
+    if(result){
+      return {
+        message:`Payment created successfully for bill ID ${bill.id}`
+      }
+    }
+    throw new InternalServerErrorException("Something went wrong while pushing data into database")
   }
-  async editPayment(paymentID:number,dto:UpdatePaymentDto){
-    // const {bill_id,...restFields} = dto
-    // const bill = await this.billService.getBillByID() as Bill
-    // return this.payRepo.update(paymentID,dto)
+  async editPayment(paymentID: number, dto: UpdatePaymentDto, reqID: number) {
+    const payment = await this.payRepo
+      .createQueryBuilder('payment')
+      .innerJoinAndSelect('payment.bill_id', 'bill')
+      .innerJoin('bill.flat', 'flat')
+      .innerJoin('flat.owner', 'owner')
+      .where('payment.payment_id = :paymentID', { paymentID })
+      .andWhere('owner.id = :ownerID', { ownerID: reqID })
+      .getOne();
+
+
+    if (!payment) {
+      throw new NotFoundException(`Payment ${paymentID} not found`);
+    }
+
+    const { bill_id, amount, is_paid } = dto;
+
+    if (bill_id !== undefined) {
+      payment.bill_id = await this.billService.getBillByID(
+        bill_id,
+        reqID,
+        'owner',
+      );
+    }
+
+    if (amount !== undefined) payment.amount = amount;
+    if (is_paid !== undefined) payment.is_paid = is_paid;
+
+    return this.payRepo.save(payment);
+  }
+  async deletePayment(paymentID:number, dto:UpdatePaymentDto, reqID:number){
+    const payment=await this.payRepo
+     .createQueryBuilder('payment')
+     .innerJoinAndSelect('payment.bill_id','bill')
+     .innerJoin('bill.flat','flat')
+     .innerJoin('flat.owner','owner')
+     .where('payment.payment_id= :paymentID',{paymentID})
+     .andWhere('owner.id=:ownerID',{ownerID:reqID})
+     .getOne();
+    
+    if(!payment){
+     throw new NotFoundException(`Payment ${paymentID} not found`);
+    }
+     await this.payRepo.delete(payment);
+     return { message: 'Payment deleted succeessfully'};
   }
 }
