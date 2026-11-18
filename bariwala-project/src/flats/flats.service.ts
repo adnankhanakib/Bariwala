@@ -80,9 +80,7 @@ export class FlatsService {
     async createFlat(flatInfo:CreateFlatDTO){
         const owner = await this.usersService.getUserByID(flatInfo.owner) as Users
         if(owner==null){
-            return{
-                message:"Owner doesn't exists"
-            }
+            throw new NotFoundException("Owner doesn't exists")
         }
         const sameOwner = await this.flatRepo.findOne({
             where:{
@@ -92,10 +90,7 @@ export class FlatsService {
             }
         })
         if(sameOwner){
-            return {
-                message:"Similar flat ID is already connected with the owner",
-                flatNo:flatInfo.flatNo
-            }
+            throw new ConflictException("Similar flat ID is already connected with the owner")
         }
         const sameFlat = await this.flatRepo.findOne({
             where:{
@@ -104,10 +99,7 @@ export class FlatsService {
             }
         })
         if(sameFlat){
-            return {
-                message:"Same address can't have multiple flats with same flat number",
-                flatNo:flatInfo.flatNo
-            }
+            throw new ConflictException("Same address can't have multiple flats with same flat number")
         }
         const flat = this.flatRepo.create({
             ...flatInfo,
@@ -192,6 +184,8 @@ export class FlatsService {
                         }
                     }
                 }
+            }else{
+                throw new InternalServerErrorException("Something went wrong when updating database")
             }
         }else{
             const {owner,...flatFields} = editDTO
@@ -201,6 +195,8 @@ export class FlatsService {
                     message:`Flat ID ${flatID} has been updated successfully`,
                     updatedInformation:flatFields
                 }
+            }else{
+                throw new InternalServerErrorException("Something went wrong when updating database")
             }
         }
     }
@@ -257,9 +253,11 @@ export class FlatsService {
                     tenantJoinDate:todayDate
                 }
             }
+        }else{
+            throw new InternalServerErrorException("Something went wrong when updating database")
         }
     }
-    async evicateTenant(flatID:number,loggedUserID:number,role:string){
+    async evictTenant(flatID:number,loggedUserID:number,role:string){
         var flat;
         if(role=="admin"){
             flat = await this.flatRepo.findOne({
@@ -295,13 +293,15 @@ export class FlatsService {
         })
         if(x.affected){
             return {
-                message:"Tenant evicated successfully",
+                message:"Tenant evictd successfully",
                 flatInformation:{
                     flatNumber: flat.flatNo,
                     floor:flat.floor,
                     address:flat.address,
                 }
             }
+        }else{
+            throw new InternalServerErrorException("Something went wrong when updating database")
         }
     }
     async getAllTenants(ownerID:number,role:string){

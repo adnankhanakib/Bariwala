@@ -40,5 +40,6 @@ export class CreateFlatDTO{
     @ApiProperty({
         example:1
     })
+    @IsNumber()
     owner:number
 }

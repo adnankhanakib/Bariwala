@@ -79,6 +79,13 @@ export class UsersService {
             }
         });
         if(user){
+            const submittedMail = updateUserDTO.email
+            if(submittedMail){
+                const mailCheck = await this.getUserByEmail(submittedMail)
+                if(mailCheck && mailCheck.id!=id){
+                    throw new ConflictException(`An user already exist with email ${submittedMail}`)
+                }
+            }
             const res = (await this.usersRepo.update(id,updateUserDTO)).affected;
             if(res) {
                 return {
@@ -86,12 +93,10 @@ export class UsersService {
                     updatedInformations:updateUserDTO
                 }
             }else{
-                return {
-                    message:`Failed to update user ${id}`
-                }
+                throw new InternalServerErrorException(`Failed to update user ${id}`)
             }
         }
-        return {message:`No user found with id ${id}`}
+        throw new NotFoundException(`No user found with id ${id}`)
     }
     async deleteUser(id:number):Promise<object | string>{
         const user = await this.usersRepo.findOneBy({id:id})
@@ -108,7 +113,8 @@ export class UsersService {
         }
     }
     async getUserByEmail(email:string):Promise<Users | null>{
-        return this.usersRepo.findOneBy({email})
+        const res = await this.usersRepo.findOneBy({email})
+        return res
     }
     async populateDB(){
         const admin:CreateUserDTO ={

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { CreateUserDTO } from './dtos/create-user.dto.js';
 import { Users } from './entities/users.entity.js';
@@ -27,19 +27,19 @@ export class UsersController {
   @Get(':id')
   @UseGuards(JwtGuard,RolesGuard)
   @Roles('admin')
-  getUserByID(@Param('id') id:number):Promise<Object>{
+  getUserByID(@Param('id',ParseIntPipe) id:number):Promise<Object>{
     return this.usersService.getUserByID(id);
   }
   @Patch(':id')
   @UseGuards(JwtGuard,RolesGuard)
   @Roles('admin')
-  async patchByID(@Param('id') id:number, @Body() user:UpdateUserDTO){
+  async patchByID(@Param('id',ParseIntPipe) id:number, @Body() user:UpdateUserDTO){
     return await this.usersService.updateUser(id,user)
   }
   @Delete(':id')
   @UseGuards(JwtGuard,RolesGuard)
   @Roles('admin')
-  async deleteByID(@Param('id') id:number){
+  async deleteByID(@Param('id',ParseIntPipe) id:number){
     return this.usersService.deleteUser(id)
   }
 

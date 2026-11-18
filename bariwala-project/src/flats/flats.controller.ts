@@ -31,22 +31,22 @@ export class FlatsController {
     return this.flatsService.getAllTenants(request.user.id,request.user.role)
   }
   @Get(":id")
-  @Roles('admin')
+  @Roles('admin','owner')
   getFlatInformation(@Param("id",ParseIntPipe) flatID:number){
     return this.flatsService.flatInformation(flatID)
   }
   @Post("/create")
-  @Roles('admin')
+  @Roles('admin','owner')
   createFlat(@Body() newFlat:CreateFlatDTO){
     return this.flatsService.createFlat(newFlat)
   }
   @Delete("/:id")
-  @Roles('admin')
+  @Roles('admin','owner')
   deleteFlat(@Param("id",ParseIntPipe) id:number){
     return this.flatsService.deleteFlat(id)
   }
   @Patch("/:id")
-  @Roles('admin')
+  @Roles('admin','owner')
   updateFlat(@Param("id",ParseIntPipe) id:number, @Body() dto:UpdateFlatDTO){
     return this.flatsService.updateFlat(id,dto)
   }
@@ -55,9 +55,9 @@ export class FlatsController {
   assignFlat(@Param('id',ParseIntPipe) flatID:number, @Body() dto:AssignFlatOwnerDTO, @Req() request:any){
     return this.flatsService.assignTenant(flatID,dto, request.user.id,request.user.role)
   }
-  @Patch("/tenants/evicate/:id")
+  @Patch("/tenants/evict/:id")
   @Roles('admin','owner')
-  evicateFlat(@Param('id',ParseIntPipe) flatID:number, @Req() request:any){
-    return this.flatsService.evicateTenant(flatID,request.user.id,request.user.role)
+  evictFlat(@Param('id',ParseIntPipe) flatID:number, @Req() request:any){
+    return this.flatsService.evictTenant(flatID,request.user.id,request.user.role)
   }
 }
