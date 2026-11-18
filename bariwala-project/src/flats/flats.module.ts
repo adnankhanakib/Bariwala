@@ -10,5 +10,6 @@ import { UsersModule } from '../users/users.module.js';
   imports:[TypeOrmModule.forFeature([Flat]),UsersModule],
   controllers: [FlatsController],
   providers: [FlatsService],
+  exports:[FlatsService]
 })
 export class FlatsModule {}

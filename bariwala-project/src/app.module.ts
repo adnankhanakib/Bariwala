@@ -6,6 +6,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module.js';
 import { FlatsModule } from './flats/flats.module.js';
+import { BillingModule } from './billing/billing.module.js';
+import { PaymentModule } from './payment/payment.module.js';
 
 @Module({
   imports: [
@@ -26,7 +28,9 @@ import { FlatsModule } from './flats/flats.module.js';
       })
     }),
     AuthModule,
-    FlatsModule
+    FlatsModule,
+    BillingModule,
+    PaymentModule,
 
   ],
   controllers: [AppController],

@@ -77,6 +77,13 @@ export class FlatsService {
             flats:flats
         }
     }
+    async getFlatbyID(id:number){
+        return await this.flatRepo.findOne({
+            where:{
+                id:id
+            }
+        })
+    }
     async createFlat(flatInfo:CreateFlatDTO){
         const owner = await this.usersService.getUserByID(flatInfo.owner) as Users
         if(owner==null){
