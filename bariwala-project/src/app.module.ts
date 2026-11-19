@@ -11,6 +11,8 @@ import { PaymentModule } from './payment/payment.module.js';
 import { FamilyMembersModule } from './family-members/family-members.module.js';
 import { ProfileUpdateRequestModule } from './profile_update_request/profile_update_request.module.js';
 import { MaintenanceModule } from './maintenance/maintenance.module.js';
+import { VendorsModule } from './vendors/vendors.module.js';
+import { ExpensesModule } from './expenses/expenses.module.js';
 
 @Module({
   imports: [
@@ -36,7 +38,9 @@ import { MaintenanceModule } from './maintenance/maintenance.module.js';
     PaymentModule,
     FamilyMembersModule,
     ProfileUpdateRequestModule,
-    MaintenanceModule
+    MaintenanceModule,
+    VendorsModule,
+    ExpensesModule
 
   ],
   controllers: [AppController],
