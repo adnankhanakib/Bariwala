@@ -8,6 +8,9 @@ import { AuthModule } from './auth/auth.module.js';
 import { FlatsModule } from './flats/flats.module.js';
 import { BillingModule } from './billing/billing.module.js';
 import { PaymentModule } from './payment/payment.module.js';
+import { FamilyMembersModule } from './family-members/family-members.module.js';
+import { ProfileUpdateRequestModule } from './profile_update_request/profile_update_request.module.js';
+import { MaintenanceModule } from './maintenance/maintenance.module.js';
 
 @Module({
   imports: [
@@ -31,6 +34,9 @@ import { PaymentModule } from './payment/payment.module.js';
     FlatsModule,
     BillingModule,
     PaymentModule,
+    FamilyMembersModule,
+    ProfileUpdateRequestModule,
+    MaintenanceModule
 
   ],
   controllers: [AppController],
