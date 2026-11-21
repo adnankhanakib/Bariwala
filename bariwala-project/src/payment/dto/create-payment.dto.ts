@@ -1,28 +1,29 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
-import { Bill } from "../../billing/entities/bill.entity.js";
-import { Users } from "../../users/entities/users.entity.js";
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, Min } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreatePaymentDto {
-    @IsNumber()
+    @IsInt()
+    @Min(1)
     @IsNotEmpty()
     @ApiProperty({
         example:1,
         description:"The payment is assigned to specific bill id"
     })
     bill_id:number;
-    @IsNumber()
+    @IsInt()
+    @Min(1)
     @IsNotEmpty()
     @ApiProperty({
         example:17200,
-        description:"Payment is an specific ammount"
+        description:"Amount paid in taka; cannot be more than the bill total"
     })
     amount:number;
     @IsBoolean()
     @IsOptional()
     @ApiProperty({
         example:true,
-        description:"The bill is paid or not"
+        required:false,
+        description:"The bill is paid or not (defaults to false)"
     })
-    is_paid:boolean=false;
+    is_paid?:boolean;
 }
