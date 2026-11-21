@@ -39,6 +39,7 @@ export class UsersController {
   }
 
   @Post('/populate')
+  @Roles('admin')
   async createDummy(){
     return this.usersService.populateDB()
   }

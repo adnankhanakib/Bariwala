@@ -15,10 +15,7 @@ export class FlatsController {
   @Get()
   @Roles('admin','owner')
   getAllFlats(@Req() request:any){
-    return this.flatsService.showAllFlats(
-      request.user.id,
-      request.user.role
-    )
+    return this.flatsService.showAllFlats(request.user.id, request.user.role)
   }
   @Get("/owner/id/:id")
   @Roles('admin')
@@ -32,23 +29,23 @@ export class FlatsController {
   }
   @Get(":id")
   @Roles('admin','owner')
-  getFlatInformation(@Param("id",ParseIntPipe) flatID:number){
-    return this.flatsService.flatInformation(flatID)
+  getFlatInformation(@Param("id",ParseIntPipe) flatID:number, @Req() request:any){
+    return this.flatsService.flatInformation(flatID, request.user.id, request.user.role)
   }
   @Post("/create")
   @Roles('admin','owner')
-  createFlat(@Body() newFlat:CreateFlatDTO){
-    return this.flatsService.createFlat(newFlat)
+  createFlat(@Body() newFlat:CreateFlatDTO, @Req() request:any){
+    return this.flatsService.createFlat(newFlat, request.user.id, request.user.role)
   }
   @Delete("/:id")
   @Roles('admin','owner')
-  deleteFlat(@Param("id",ParseIntPipe) id:number){
-    return this.flatsService.deleteFlat(id)
+  deleteFlat(@Param("id",ParseIntPipe) id:number, @Req() request:any){
+    return this.flatsService.deleteFlat(id, request.user.id, request.user.role)
   }
   @Patch("/:id")
   @Roles('admin','owner')
-  updateFlat(@Param("id",ParseIntPipe) id:number, @Body() dto:UpdateFlatDTO){
-    return this.flatsService.updateFlat(id,dto)
+  updateFlat(@Param("id",ParseIntPipe) id:number, @Body() dto:UpdateFlatDTO, @Req() request:any){
+    return this.flatsService.updateFlat(id, dto, request.user.id, request.user.role)
   }
   @Patch("/tenants/assign/:id")
   @Roles('admin','owner')

@@ -37,7 +37,8 @@ export class CreateUserDTO{
     @IsIn(['owner','admin','tenant'])
     @ApiProperty({
         example:'owner',
-        description:'This field is optional. Supported fields are - owner, admin, tenant'
+        required:false,
+        description:'Optional. One of owner, admin, tenant. Defaults to owner when creating a user.'
     })
-    role:string='owner';
+    role?:string;
 }

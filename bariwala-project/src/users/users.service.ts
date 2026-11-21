@@ -1,150 +1,140 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Users } from './entities/users.entity.js';
 import { CreateUserDTO } from './dtos/create-user.dto.js';
-import { promises } from 'dns';
-import { NotFoundError } from 'rxjs';
 import { UpdateUserDTO } from './dtos/update-user.dto.js';
-import * as bcrypt from 'bcrypt';
-import { response } from 'express';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(Users)
-        private readonly usersRepo:Repository<Users>
-    ){}
-    async create(newUser:CreateUserDTO):Promise<Object>{
-        const existingMail = await this.usersRepo.findOneBy({
-            email:newUser.email
-        })
-        if(existingMail){
-            throw new ConflictException(`Email ${newUser.email} already exists`)
-        }
-        const {password,...userFields} = newUser
-        const passwordHash = await bcrypt.hash(newUser.password,10)
+        private readonly usersRepo: Repository<Users>,
+    ) {}
 
-        const user = this.usersRepo.create({
-            ...userFields,
-            passwordHash,
-        });
-        const res = await this.usersRepo.save(user);
-        if(res){
-            const {password,...userWithoutPass} = newUser;
-            return {
-                message:"User created successfully",
-                details:userWithoutPass
-            }
-        }else{
-            throw new InternalServerErrorException("Failed to create user")
+    async create(newUser: CreateUserDTO): Promise<object> {
+        const existingMail = await this.usersRepo.findOneBy({ email: newUser.email });
+        if (existingMail) {
+            throw new ConflictException(`Email ${newUser.email} already exists`);
         }
-    }
-    async showAllUsers(): Promise<Users[]>{
-        return this.usersRepo.find({
-            select:{
-                id:true,
-                name:true,
-                email:true,
-                phone:true,
-                createdAt:true,
-                updatedAt:true
-            }
-        })
-    }
-    async getUserByID(id:number):Promise<Users>{
-        const user = await this.usersRepo.findOne({
-            where:{
-                id:id
+        const { password, ...userFields } = newUser;
+        const role = userFields.role ?? 'owner';
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const saved = await this.usersRepo.save(
+            this.usersRepo.create({ ...userFields, role, passwordHash }),
+        );
+        return {
+            message: 'User created successfully',
+            details: {
+                id: saved.id,
+                name: saved.name,
+                email: saved.email,
+                phone: saved.phone,
+                role: saved.role,
             },
-            select:{
-                id:true,
-                name:true,
-                email:true,
-                phone:true,
-                role:true,
-                createdAt:true,
-                updatedAt:true
-            }
-        })
-        if(!user){
-            throw new NotFoundException(`No user found with ID ${id}`)
-        }
-        return user
+        };
     }
-    async updateUser(id:number,updateUserDTO:UpdateUserDTO):Promise<object>{
-        const user = await this.usersRepo.findOne({
-            where:{
-                id:id
-            }
+
+    async showAllUsers(): Promise<Users[]> {
+        return this.usersRepo.find({
+            select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true, updatedAt: true },
+            order: { id: 'ASC' },
         });
-        if(user){
-            const submittedMail = updateUserDTO.email
-            if(submittedMail){
-                const mailCheck = await this.getUserByEmail(submittedMail)
-                if(mailCheck && mailCheck.id!=id){
-                    throw new ConflictException(`An user already exist with email ${submittedMail}`)
-                }
-            }
-            const res = (await this.usersRepo.update(id,updateUserDTO)).affected;
-            if(res) {
-                return {
-                    message:`User ${id} updated successfully`,
-                    updatedInformations:updateUserDTO
-                }
-            }else{
-                throw new InternalServerErrorException(`Failed to update user ${id}`)
-            }
-        }
-        throw new NotFoundException(`No user found with id ${id}`)
     }
-    async deleteUser(id:number):Promise<object | string>{
-        const user = await this.usersRepo.findOneBy({id:id})
-        if(!user){
-            throw new NotFoundException(`No user found with id ${id}`)
+
+    async getUserByID(id: number): Promise<Users> {
+        const user = await this.usersRepo.findOne({
+            where: { id },
+            select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true, updatedAt: true },
+        });
+        if (!user) {
+            throw new NotFoundException(`No user found with ID ${id}`);
         }
-        const res = (await this.usersRepo.delete(id)).affected;
-        if(res){
-            return {
-                message:`User deleted successfully with ID ${id}`
+        return user;
+    }
+
+    async updateUser(id: number, dto: UpdateUserDTO): Promise<object> {
+        const user = await this.usersRepo.findOneBy({ id });
+        if (!user) {
+            throw new NotFoundException(`No user found with id ${id}`);
+        }
+        if (dto.email) {
+            const mailCheck = await this.getUserByEmail(dto.email);
+            if (mailCheck && mailCheck.id !== id) {
+                throw new ConflictException(`An user already exist with email ${dto.email}`);
             }
-        }else{
-            throw new InternalServerErrorException(`Something went wrong when deleting the user ${id}`)
-        }
-    }
-    async getUserByEmail(email:string):Promise<Users | null>{
-        const res = await this.usersRepo.findOneBy({email})
-        return res
-    }
-    async populateDB(){
-        const admin:CreateUserDTO ={
-            name:'Adnan',
-            email:'admin@example.com',
-            phone:'01997753452',
-            password:'Admin121436!',
-            role:'admin'
-        }
-        const owner:CreateUserDTO={
-            name:'Khan',
-            email:'owner@example.com',
-            phone:'01997753452',
-            password:'Demo121436!',
-            role:'owner'
-        }
-        var responseObj = {
-            message:"Database populated with these datas",
-            owner:owner,
-            admin:admin
         }
 
-        const checkAdminDummy = await this.usersRepo.findOneBy({email:admin.email})
-        const checkOwnerDummy = await this.usersRepo.findOneBy({email:owner.email})
-        if(checkAdminDummy && checkOwnerDummy){
-            responseObj.message="Database already populated with these values"
-        }else{
-            await this.create(admin)
-            await this.create(owner)
+        const { password, ...fields } = dto;
+        const changes: Partial<Users> = { ...fields };
+        if (password) {
+            changes.passwordHash = await bcrypt.hash(password, 10);
         }
-        return responseObj
+        if (Object.keys(changes).length > 0) {
+            await this.usersRepo.update(id, changes);
+        }
+        return {
+            message: `User ${id} updated successfully`,
+            updatedInformation: fields,
+            passwordChanged: !!password,
+        };
+    }
+
+    async deleteUser(id: number): Promise<object> {
+        const user = await this.usersRepo.findOneBy({ id });
+        if (!user) {
+            throw new NotFoundException(`No user found with id ${id}`);
+        }
+        try {
+            await this.usersRepo.delete(id);
+        } catch (err: any) {
+            if (err?.code === '23503') {
+                throw new ConflictException(
+                    `User ${id} is still linked to flats, bills or requests and cannot be deleted`,
+                );
+            }
+            throw err;
+        }
+        return { message: `User deleted successfully with ID ${id}` };
+    }
+
+    async getUserByEmail(email: string): Promise<Users | null> {
+        return this.usersRepo.findOneBy({ email });
+    }
+
+    async populateDB() {
+        const admin: CreateUserDTO = {
+            name: 'Adnan',
+            email: 'admin@example.com',
+            phone: '01997753452',
+            password: 'Admin121436!',
+            role: 'admin',
+        };
+        const owner: CreateUserDTO = {
+            name: 'Khan',
+            email: 'owner@example.com',
+            phone: '01997753452',
+            password: 'Demo121436!',
+            role: 'owner',
+        };
+        const created: string[] = [];
+        for (const user of [admin, owner]) {
+            if (!(await this.usersRepo.findOneBy({ email: user.email }))) {
+                await this.create(user);
+                created.push(user.email);
+            }
+        }
+        return {
+            message: created.length
+                ? 'Database populated with demo accounts'
+                : 'Database already populated with these values',
+            accounts: [
+                { email: admin.email, role: 'admin' },
+                { email: owner.email, role: 'owner' },
+            ],
+            created,
+        };
     }
 }

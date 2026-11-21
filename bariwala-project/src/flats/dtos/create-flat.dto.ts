@@ -1,6 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
-import type { Relation } from "typeorm";
-import { Users } from "../../users/entities/users.entity.js";
+import { IsInt, IsNotEmpty, IsString, MaxLength, Min } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateFlatDTO{
@@ -18,19 +16,22 @@ export class CreateFlatDTO{
         example:"115 Ahmedbagh, Bashabo"
     })
     address:string;
-    @IsNumber()
+    @IsInt()
+    @Min(0)
     @IsNotEmpty({message:"Floor is required"})
     @ApiProperty({
         example:4
     })
     floor:number;
-    @IsNumber()
+    @IsInt()
+    @Min(1)
     @IsNotEmpty({message:"Bedrooms number is required"})
     @ApiProperty({
         example:3
     })
     bedrooms:number;
-    @IsNumber()
+    @IsInt()
+    @Min(1)
     @IsNotEmpty({message:"Rent is required"})
     @ApiProperty({
         example:25000
@@ -38,8 +39,9 @@ export class CreateFlatDTO{
     rent:number;
     @IsNotEmpty({message:"Flat must have an owner"})
     @ApiProperty({
-        example:1
+        example:1,
+        description:"Owner user id. Owners can only use their own id; admins can pick any owner."
     })
-    @IsNumber()
+    @IsInt()
     owner:number
 }
